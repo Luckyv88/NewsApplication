@@ -5,8 +5,35 @@ const cors = require('cors');
 const path = require("path");
 
 const app = express();
+
+// ----------------------------------------------------
+// 🔥 CORS FIX: Explicitly allow the service's own domain
+// ----------------------------------------------------
+
+// Define the allowed origins. Since your frontend and backend share the 
+// same deployed URL, we allow that URL and the local development URL.
+const allowedOrigins = [
+    'http://localhost:3000', // For local development
+    'https://newsapplication-htnr.onrender.com', // The deployed production URL
+];
+
+const corsOptions = {
+    origin: (origin, callback) => {
+        // Allow requests with no origin (like same-origin or curl) or if the origin is in the allowed list
+        if (!origin || allowedOrigins.some(ao => origin.startsWith(ao))) {
+            callback(null, true);
+        } else {
+            callback(new Error(`CORS policy does not allow access from ${origin}`));
+        }
+    },
+    methods: 'GET,HEAD,PUT,PATCH,POST,DELETE',
+    credentials: true,
+};
+
 app.use(express.json());
-app.use(cors());
+app.use(cors(corsOptions)); 
+
+// ----------------------------------------------------
 
 // Import routes
 const authRoutes = require('./routes/auth.routes');
@@ -26,11 +53,9 @@ mongoose.connect(process.env.MONGODB_URI)
 app.use(express.static(path.join(__dirname, 'frontendd/build')));
 
 // Catch-all route to serve index.html for React routing
-// FIX: Change '/*' to '*' to resolve the PathError.
-// Catch-all route to serve index.html for React routing
-// Using app.use() is more robust for a final catch-all.
+// This must be the last middleware/route defined
 app.use((req, res) => {
- res.sendFile(path.join(__dirname, 'frontendd/build', 'index.html'));
+ res.sendFile(path.join(__dirname, 'frontendd/build', 'index.html'));
 });
 
 // Start server
