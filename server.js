@@ -18,15 +18,17 @@ app.use('/api/news', newsRoutes);
 
 // Connect MongoDB
 mongoose.connect(process.env.MONGODB_URI)
-  .then(() => console.log('✅ MongoDB Connected'))
-  .catch((err) => console.error('❌ MongoDB Connection Error:', err));
+  .then(() => console.log('✅ MongoDB Connected'))
+  .catch((err) => console.error('❌ MongoDB Connection Error:', err));
 
 // Serve React frontend (make sure frontendd/build exists)
+// This must come *before* the catch-all route
 app.use(express.static(path.join(__dirname, 'frontendd/build')));
 
 // Catch-all route to serve index.html for React routing
-app.get('/*', (req, res) => {
-  res.sendFile(path.join(__dirname, 'frontendd/build', 'index.html'));
+// FIX: Change '/*' to '*' to resolve the PathError.
+app.get('*', (req, res) => {
+  res.sendFile(path.join(__dirname, 'frontendd/build', 'index.html'));
 });
 
 // Start server
