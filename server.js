@@ -21,10 +21,12 @@ mongoose.connect(process.env.MONGODB_URI)
   .then(() => console.log('✅ MongoDB Connected'))
   .catch((err) => console.error('❌ MongoDB Connection Error:', err));
 
-  app.use(express.static(path.join(__dirname, "../frontend/build")));
+// Serve React frontend (make sure frontendd/build exists)
+app.use(express.static(path.join(__dirname, 'frontendd/build')));
 
-app.get("*", (req, res) => {
-  res.sendFile(path.resolve(__dirname, "../frontend/build", "index.html"));
+// Catch-all route to serve index.html for React routing
+app.get('/*', (req, res) => {
+  res.sendFile(path.join(__dirname, 'frontendd/build', 'index.html'));
 });
 
 // Start server
